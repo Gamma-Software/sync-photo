@@ -1,0 +1,44 @@
+#!/bin/bash
+for i in "$@"; do
+  case $i in
+    -d=*|--device=*)
+      DEVICE="${i#*=}"
+      shift # past argument=value
+      ;;
+    -m=*|--mount=*)
+      MOUNT="${i#*=}"
+      shift # past argument=value
+      ;;
+    -i=*|--input=*)
+      INPUT="${i#*=}"
+      shift # past argument=value
+      ;;
+    -o=*|--output=*)
+      OUTPUT="${i#*=}"
+      shift # past argument=value
+      ;;
+    -c=*|--chat_id=*)
+      CHAT_ID="${i#*=}"
+      shift # past argument=value
+      ;;
+    -b=*|--bot_id=*)
+      BOT_ID="${i#*=}"
+      shift # past argument=value
+      ;;
+    -*|--*)
+      echo "Unknown option $i"
+      exit 1
+      ;;
+    *)
+      ;;
+  esac
+done
+
+# if the device exists
+if [ -e ${DEVICE} ]; then
+    su - sysadmin -c "curl -s --data 'text=Uploading photos...' --data 'chat_id=${CHAT_ID}' 'https://api.telegram.org/bot'${BOT_ID}'/sendMessage' > /dev/null"
+    mount ${DEVICE} ${MOUNT}
+    rsync -avp --chown=valentin:valentin --progress ${INPUT}/* ${OUTPUT}  > /tmp/sync.log
+    umount ${DEVICE}
+    su - sysadmin -c "curl -s --data 'text=Photo uploaded! You can remove the SDCard' --data 'chat_id=${CHAT_ID}' 'https://api.telegram.org/bot'${BOT_ID}'/sendMessage' > /dev/null"
+fi
