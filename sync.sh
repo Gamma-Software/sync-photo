@@ -1,6 +1,10 @@
 #!/bin/bash
 for i in "$@"; do
   case $i in
+    -u=*|--username=*)
+      USERNAME="${i#*=}"
+      shift # past argument=value
+      ;;
     -d=*|--device=*)
       DEVICE="${i#*=}"
       shift # past argument=value
@@ -36,9 +40,9 @@ done
 
 # if the device exists
 if [ -e ${DEVICE} ]; then
-    su - sysadmin -c "curl -s --data 'text=Uploading photos...' --data 'chat_id=${CHAT_ID}' 'https://api.telegram.org/bot'${BOT_ID}'/sendMessage' > /dev/null"
+    su - ${USERNAME} -c "curl -s --data 'text=Uploading photos...' --data 'chat_id=${CHAT_ID}' 'https://api.telegram.org/bot'${BOT_ID}'/sendMessage' > /dev/null"
     mount ${DEVICE} ${MOUNT}
-    rsync -avp --chown=valentin:valentin --progress ${INPUT}/* ${OUTPUT}  > /tmp/sync.log
+    rsync -avp --chown=${USERNAME}:${USERNAME} --progress ${INPUT}/* ${OUTPUT}  > /tmp/sync.log
     umount ${DEVICE}
-    su - sysadmin -c "curl -s --data 'text=Photo uploaded! You can remove the SDCard' --data 'chat_id=${CHAT_ID}' 'https://api.telegram.org/bot'${BOT_ID}'/sendMessage' > /dev/null"
+    su - ${USERNAME} -c "curl -s --data 'text=Photo uploaded! You can remove the SDCard' --data 'chat_id=${CHAT_ID}' 'https://api.telegram.org/bot'${BOT_ID}'/sendMessage' > /dev/null"
 fi
