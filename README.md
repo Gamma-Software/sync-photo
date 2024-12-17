@@ -17,7 +17,9 @@ Where:
 * `-c=<chat_id>` is the Telegram chat ID
 
 # Best practices
+First get the info of your SDCard/USB with the command `udevadm info -n /dev/sd*`
 To automatically sync the photos when the sdcard is plugged in (as it's the main reason the script is created), first create a udev rule in the folder `/etc/udev/rules.d/` with the name of your choice. It should look like this: `99.sdcard.rules` with the content:
-```KERNEL=="sdc1" SYMLINK+="sdcard", RUN+="/bin/bash /<path_to_script>/sync.sh -u=<user> -d=<device> -m=<mounting_point> -i=<input_path> -o=<output_path> -b=<bot_id> -c=<chat_id>"```\
+```KERNEL=="sd*", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ENV{ID_SERIAL_SHORT}=="158F84618461", SYMLINK+="sdcard", RUN+="/bin/bash /<path_to_script>/sync.sh -u=<user> -d=<device> -m=<mounting_point> -i=<input_path> -o=<output_path> -b=<bot_id> -c=<chat_id>"```\
 Notice that the symlink *sdcard* will be the `-m=<mounting_point>` parameter, here `-m=/dev/sdcard`
 Each time the sdcard will be plugged in, the script will be called.
+Finally reload the udev rule with `sudo udevadm trigger`
